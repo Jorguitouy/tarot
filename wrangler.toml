@@ -1,0 +1,20 @@
+name = "tarot-api"
+main = "functions/api.js"
+compatibility_date = "2024-01-01"
+
+# Variables de entorno para el login del panel admin
+[vars]
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "tarot2025"
+
+# Base de datos D1
+[[d1_databases]]
+binding = "DB"
+database_name = "tarot-database"
+database_id = "" # Se generará al crear la base de datos
+
+# Routes para el worker
+[triggers]
+routes = [
+  { pattern = "*/api/*", zone_name = "tu-dominio.com" }
+]

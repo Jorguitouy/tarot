@@ -42,44 +42,60 @@ document.getElementById('tarot-form').addEventListener('submit', async function(
         timestamp: new Date().toISOString()
     };
     
-    // Aquí puedes integrar con tu servicio de backend
-    // Por ahora, solo mostramos el mensaje de éxito
-    console.log('Datos del formulario:', formData);
-    
-    // Simular envío
+    // Cambiar estado del botón
     const submitButton = this.querySelector('.submit-button');
+    const originalText = submitButton.textContent;
     submitButton.textContent = '⏳ Enviando...';
     submitButton.disabled = true;
     
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Ocultar formulario y mostrar mensaje de éxito
-    document.getElementById('tarot-form').style.display = 'none';
-    document.getElementById('success-message').style.display = 'block';
-    
-    // Scroll al mensaje de éxito
-    document.getElementById('success-message').scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-    });
-    
-    // Tracking para Facebook Pixel (agregar tu pixel ID)
-    if (typeof fbq !== 'undefined') {
-        fbq('track', 'Lead', {
-            content_name: 'Lectura de Tarot Gratuita',
-            content_category: 'Tarot',
-            value: 0,
-            currency: 'USD'
+    try {
+        // Enviar datos a la API
+        const response = await fetch('/api/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
         });
-    }
-    
-    // Google Analytics tracking (si lo usas)
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'generate_lead', {
-            'event_category': 'Form',
-            'event_label': 'Tarot Gratuito'
-        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Ocultar formulario y mostrar mensaje de éxito
+            document.getElementById('tarot-form').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+            
+            // Scroll al mensaje de éxito
+            document.getElementById('success-message').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Tracking para Facebook Pixel (agregar tu pixel ID)
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', {
+                    content_name: 'Lectura de Tarot Gratuita',
+                    content_category: 'Tarot',
+                    value: 0,
+                    currency: 'USD'
+                });
+            }
+            
+            // Google Analytics tracking (si lo usas)
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'generate_lead', {
+                    'event_category': 'Form',
+                    'event_label': 'Tarot Gratuito'
+                });
+            }
+        } else {
+            throw new Error(data.error || 'Error al enviar el formulario');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.');
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
     }
 });
 
