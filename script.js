@@ -61,16 +61,6 @@ document.getElementById('tarot-form').addEventListener('submit', async function(
         const data = await response.json();
 
         if (data.success) {
-            // Ocultar formulario y mostrar mensaje de éxito
-            document.getElementById('tarot-form').style.display = 'none';
-            document.getElementById('success-message').style.display = 'block';
-            
-            // Scroll al mensaje de éxito
-            document.getElementById('success-message').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-            
             // Tracking para Facebook Pixel (agregar tu pixel ID)
             if (typeof fbq !== 'undefined') {
                 fbq('track', 'Lead', {
@@ -88,6 +78,39 @@ document.getElementById('tarot-form').addEventListener('submit', async function(
                     'event_label': 'Tarot Gratuito'
                 });
             }
+
+            // Preparar mensaje de WhatsApp con los datos del formulario
+            const areaLabels = {
+                'amor': '💖 Amor y Relaciones',
+                'dinero': '💰 Dinero y Trabajo',
+                'salud': '🌿 Salud y Bienestar',
+                'familia': '👨‍👩‍👧 Familia',
+                'futuro': '🔮 Futuro General',
+                'otro': '✨ Otro Tema'
+            };
+
+            const mensaje = `🔮 *Solicitud de Lectura de Tarot*
+
+*Nombre:* ${formData.nombre}
+*Email:* ${formData.email}
+*Teléfono:* ${formData.telefono || 'No proporcionado'}
+*Fecha de Nacimiento:* ${formData.fechaNacimiento}
+*Área de Consulta:* ${areaLabels[formData.consulta] || formData.consulta}
+${formData.pregunta ? `*Pregunta:* ${formData.pregunta}` : ''}
+
+¡Hola! He solicitado mi lectura de tarot gratuita. Estoy esperando tu respuesta. ✨`;
+
+            // Número de WhatsApp (sin espacios ni caracteres especiales)
+            const numeroWhatsApp = '5555991600125';
+            
+            // Codificar mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Construir URL de WhatsApp
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Redirigir a WhatsApp
+            window.location.href = urlWhatsApp;
         } else {
             throw new Error(data.error || 'Error al enviar el formulario');
         }
