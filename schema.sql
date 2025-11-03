@@ -1,4 +1,3 @@
--- Tabla para almacenar los datos de las consultas de tarot
 CREATE TABLE IF NOT EXISTS consultas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -12,14 +11,12 @@ CREATE TABLE IF NOT EXISTS consultas (
     notas_admin TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-8
--- Índices para mejorar el rendimiento
+
 CREATE INDEX IF NOT EXISTS idx_email ON consultas(email);
 CREATE INDEX IF NOT EXISTS idx_timestamp ON consultas(timestamp);
 CREATE INDEX IF NOT EXISTS idx_atendido ON consultas(atendido);
 CREATE INDEX IF NOT EXISTS idx_created_at ON consultas(created_at DESC);
 
--- Tabla para usuarios admin (opcional para futura expansión)
 CREATE TABLE IF NOT EXISTS admin_users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,

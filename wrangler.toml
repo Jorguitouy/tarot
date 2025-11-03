@@ -11,10 +11,4 @@ ADMIN_PASSWORD = "tarot2025"
 [[d1_databases]]
 binding = "DB"
 database_name = "tarot-database"
-database_id = "" # Se generará al crear la base de datos
-
-# Routes para el worker
-[triggers]
-routes = [
-  { pattern = "*/api/*", zone_name = "tu-dominio.com" }
-]
+database_id = "b85548ef-048f-45eb-bd83-91d97a2ca21f"
