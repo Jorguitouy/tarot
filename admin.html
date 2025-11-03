@@ -240,6 +240,26 @@
             background: var(--background);
         }
 
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20BA5A;
+        }
+
         .status-badge {
             padding: 5px 12px;
             border-radius: 20px;
@@ -352,18 +372,123 @@
             .admin-header {
                 flex-direction: column;
                 gap: 20px;
+                padding: 20px;
+            }
+
+            .admin-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .admin-header .user-info {
+                flex-direction: column;
+                width: 100%;
+                gap: 15px;
+            }
+
+            .admin-header .stats {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .admin-header .stats span {
+                text-align: center;
+            }
+
+            .btn-logout {
+                width: 100%;
             }
 
             .filters {
                 flex-direction: column;
+                padding: 15px;
+            }
+
+            .filter-group {
+                min-width: 100%;
             }
 
             .table-container {
                 padding: 15px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 800px;
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 10px 8px;
+                white-space: nowrap;
+            }
+
+            .btn-action {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+                margin-bottom: 5px;
+                display: block;
+                width: 100%;
+            }
+
+            .btn-whatsapp {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+                margin-left: 0;
+                margin-top: 5px;
+                width: 100%;
+            }
+
+            .status-badge {
+                font-size: 0.75rem;
+                padding: 4px 8px;
             }
 
             .login-box {
                 padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .modal-content {
+                padding: 25px;
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .detail-row {
+                font-size: 0.9rem;
+                word-wrap: break-word;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .admin-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .admin-header .stats {
+                font-size: 0.85rem;
+            }
+
+            table {
+                font-size: 0.75rem;
+            }
+
+            th, td {
+                padding: 8px 5px;
             }
         }
     </style>
@@ -579,8 +704,17 @@
                 const tr = document.createElement('tr');
                 const fecha = new Date(consulta.created_at).toLocaleDateString('es-ES');
                 
+                // Crear botón de WhatsApp si tiene teléfono
+                const whatsappButton = consulta.telefono ? 
+                    `<a href="#" class="btn-whatsapp" onclick="sendWhatsApp('${consulta.telefono}', '${consulta.nombre}', ${consulta.id}); return false;">
+                        📱 WhatsApp
+                    </a>` : '';
+                
                 tr.innerHTML = `
-                    <td>#${consulta.id}</td>
+                    <td>
+                        #${consulta.id}
+                        ${whatsappButton}
+                    </td>
                     <td>${fecha}</td>
                     <td>${consulta.nombre}</td>
                     <td>${consulta.email}</td>
@@ -620,6 +754,13 @@
             if (!consulta) return;
 
             const modalBody = document.getElementById('modal-body');
+            
+            // Botón de WhatsApp en el modal si tiene teléfono
+            const whatsappButton = consulta.telefono ? 
+                `<button class="btn btn-primary" onclick="sendWhatsApp('${consulta.telefono}', '${consulta.nombre}', ${consulta.id})" style="background: #25D366; margin-right: 10px;">
+                    📱 Enviar WhatsApp
+                </button>` : '';
+            
             modalBody.innerHTML = `
                 <div class="detail-row">
                     <strong>ID de Consulta:</strong>
@@ -631,11 +772,12 @@
                 </div>
                 <div class="detail-row">
                     <strong>Email:</strong>
-                    ${consulta.email}
+                    <a href="mailto:${consulta.email}" style="color: var(--primary-color);">${consulta.email}</a>
                 </div>
                 <div class="detail-row">
                     <strong>Teléfono/WhatsApp:</strong>
                     ${consulta.telefono || 'No proporcionado'}
+                    ${consulta.telefono ? `<br><a href="tel:${consulta.telefono}" style="color: var(--primary-color);">📞 Llamar</a>` : ''}
                 </div>
                 <div class="detail-row">
                     <strong>Fecha de Nacimiento:</strong>
@@ -661,11 +803,50 @@
                 </div>
             `;
 
+            // Actualizar los botones de acción
+            const modalActions = document.querySelector('.modal-actions');
+            modalActions.innerHTML = `
+                ${whatsappButton}
+                <button class="btn btn-primary" onclick="closeModal()">Cerrar</button>
+            `;
+
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
         function closeModal() {
             document.getElementById('detail-modal').style.display = 'none';
+        }
+
+        function sendWhatsApp(telefono, nombre, consultaId) {
+            // Limpiar el número de teléfono (quitar espacios, guiones, etc.)
+            let numero = telefono.replace(/\D/g, '');
+            
+            // Si no empieza con código de país, agregar 58 (Venezuela)
+            if (!numero.startsWith('58') && !numero.startsWith('+58')) {
+                // Si empieza con 0, quitarlo
+                if (numero.startsWith('0')) {
+                    numero = numero.substring(1);
+                }
+                numero = '58' + numero;
+            }
+            
+            // Mensaje personalizado
+            const mensaje = `Hola ${nombre} 👋
+
+¡Gracias por solicitar tu lectura de Tarot! 🔮
+
+He recibido tu consulta (#${consultaId}) y estoy preparando tu lectura personalizada.
+
+¿Hay algo específico que te gustaría que incluya en tu lectura?
+
+Bendiciones ✨`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Abrir WhatsApp (funciona en móvil y desktop)
+            const urlWhatsApp = `https://wa.me/${numero}?text=${mensajeCodificado}`;
+            window.open(urlWhatsApp, '_blank');
         }
 
         async function markComplete(id) {
